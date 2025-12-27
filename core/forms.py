@@ -10,7 +10,7 @@ class UserProfileForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2', 'bio', 'avatar')
+        fields = ('username', 'email')
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -34,3 +34,9 @@ class UserProfileForm(UserCreationForm):
                     profile.save()
 
         return user
+    
+class LoginForm(forms.Form):
+    username = forms.CharField(max_length=150)
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    

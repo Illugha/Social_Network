@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h1>{{ profile.user.username }}'s Profile</h1>
+  {% if profile.avatar %}
+    <img src="{{ profile.avatar.url }}" alt="Avatar of {{ profile.user.username }}">
+  {% endif %}
+  <p><strong>Bio:</strong> {{ profile.bio }}</p>
+  <p><strong>Role:</strong> {{ profile.get_role_display }}</p>
+  <p><strong>Date Joined:</strong> {{ profile.date_joined }}</p>
+{% endblock %}
