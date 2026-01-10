@@ -35,7 +35,7 @@ class LoginFormView(FormView):
         if user is not None:
             login(self.request, user)
             messages.success(self.request, "Ви успішно увійшли!")
-            return redirect('core:profile_detail', pk=user.user_profile.pk)
+            return redirect('core:profile_detail')
         else:
             form.add_error(None, "Невірний логін або пароль")
             return self.form_invalid(form)
