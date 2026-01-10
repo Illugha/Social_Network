@@ -39,4 +39,17 @@ class LoginForm(forms.Form):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
 
-    
+
+class UserProfileUpdateForm(forms.ModelForm):
+    bio = forms.CharField(widget=forms.Textarea, required=False)
+    avatar = forms.ImageField(required=False)
+
+    class Meta:
+        model = UserProfile
+        fields = ('bio', 'avatar')
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        if commit:
+            profile.save()
+        return profile

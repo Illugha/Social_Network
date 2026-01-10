@@ -39,3 +39,12 @@ class LoginFormView(FormView):
         else:
             form.add_error(None, "Невірний логін або пароль")
             return self.form_invalid(form)
+
+class UserProfileUpdateView(UpdateView):
+    model = UserProfile
+    form_class = UserProfileForm
+    template_name = 'core/profile_update.html'
+    success_url = reverse_lazy('core:profile_detail')
+
+    def get_object(self, queryset=None):
+        return UserProfile.objects.get(user=self.request.user)
