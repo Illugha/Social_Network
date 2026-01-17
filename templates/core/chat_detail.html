@@ -1,0 +1,21 @@
+{extends 'base.html'}
+
+{% block content %}
+    <h1 class="mb-4">Chat: {{ chat.name }}</h1>
+    {% for message in chat.messages.all %} 
+        <div class="mb-2">
+            <strong>{{ message.sender.username }}:</strong> {{ message.content }} <br>
+            <small class="text-muted">{{ message.timestamp }}</small>
+        </div>
+    {% empty %}
+        <p>No messages in this chat.</p>
+    {% endfor %}
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="messageContent" class="form-label">New Message</label>
+            <textarea class="form-control" id="messageContent" name="content" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary"><img src="/static/imgs/send.png" width="20" height="20" alt="Send"></button>
+    </form>
+{% endblock %}

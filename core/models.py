@@ -21,4 +21,25 @@ class UserProfile(models.Model):
         verbose_name = 'User Profile'
         verbose_name_plural = 'User Profiles'
     
+class Chat(models.Model):
+    AVAILABILITY_CHOICES = (
+        ('public', 'Public'),
+        ('private', 'Private'),
+    )
+
+    name = models.CharField(max_length=255, default='New Chat')
+    participants = models.ManyToManyField(UserProfile, related_name='chats')
+    availability = models.CharField(max_length=50, choices=AVAILABILITY_CHOICES, default='private')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Chat {self.id} with {self.participants.count()} participants"
     
+class Message(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.sender.user.username} at {self.timestamp}"

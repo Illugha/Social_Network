@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import UserProfile
+from .models import UserProfile, Chat
 
 
 class UserProfileForm(UserCreationForm):
@@ -53,3 +53,47 @@ class UserProfileUpdateForm(forms.ModelForm):
         if commit:
             profile.save()
         return profile
+
+# class NewChatForm(forms.ModelForm):
+#     name = forms.CharField(max_length=255, initial='New Chat')
+
+#     availability = forms.ChoiceField(choices=[
+#         ('public', 'Public'),
+#         ('private', 'Private'),
+#     ])
+#     participants = forms.ModelMultipleChoiceField(
+#         queryset=UserProfile.objects.all(),
+#         widget=forms.CheckboxSelectMultiple
+#     )
+
+#     class Meta:
+#         model = Chat
+#         fields = ('name', 'availability', 'participants')
+
+#     def save(self, commit=True):
+#         chat = Chat(
+#             availability=self.cleaned_data['availability'],
+#             name = self.cleaned_data['name']
+#         )
+#         if commit:
+#             chat.save()
+#             chat.participants.set(self.cleaned_data['participants'])
+#         return chat
+
+class NewChatForm(forms.ModelForm):
+    participants = forms.ModelMultipleChoiceField(
+        queryset=UserProfile.objects.all(),
+        widget=forms.CheckboxSelectMultiple)
+    
+    class Meta:
+        model = Chat
+        fields = ('name', 'availability', 'participants')
+
+    def save(self, commit=True):
+        chat = super().save(commit=False)
+
+        if commit:
+            chat.save()
+            self.save_m2m()
+
+        return chat
