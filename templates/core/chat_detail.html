@@ -1,21 +1,38 @@
-{extends 'base.html'}
+{% extends 'base.html' %}
 
 {% block content %}
-    <h1 class="mb-4">Chat: {{ chat.name }}</h1>
-    {% for message in chat.messages.all %} 
-        <div class="mb-2">
-            <strong>{{ message.sender.username }}:</strong> {{ message.content }} <br>
-            <small class="text-muted">{{ message.timestamp }}</small>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+
+        <h2 class="mb-4">Chat: {{ chat.name }}</h2>
+
+        <!-- Сообщения -->
+        <div class="mb-4">
+            {% for message in chat.messages.all %}
+                <div class="card mb-2 shadow-sm">
+                    <div class="card-body p-2">
+                        <strong>{{ message.sender.username }}:</strong>
+                        <span>{{ message.content }}</span>
+                        <br>
+                        <small class="text-muted">{{ message.timestamp|date:"d M Y H:i" }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-info">No messages in this chat.</div>
+            {% endfor %}
         </div>
-    {% empty %}
-        <p>No messages in this chat.</p>
-    {% endfor %}
-    <form method="post" class="mt-4">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="messageContent" class="form-label">New Message</label>
-            <textarea class="form-control" id="messageContent" name="content" rows="3" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary"><img src="/static/imgs/send.png" width="20" height="20" alt="Send"></button>
-    </form>
+
+        <!-- Форма отправки -->
+        <form method="post" class="mb-4">
+            {% csrf_token %}
+            <div class="input-group">
+                <textarea class="form-control" name="content" rows="2" placeholder="Type a message..." required></textarea>
+                <button class="btn btn-primary" type="submit">
+                    <img src="/static/imgs/send.png" width="20" height="20" alt="Send">
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
 {% endblock %}

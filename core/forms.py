@@ -1,16 +1,44 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import UserProfile, Chat
+from .models import UserProfile, Chat, Post
 
 
 class UserProfileForm(UserCreationForm):
-    bio = forms.CharField(widget=forms.Textarea, required=False)
+    bio = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': 'Расскажите о себе…',
+            'rows': 3
+        }),
+        required=False
+    )
     avatar = forms.ImageField(required=False)
 
     class Meta:
         model = User
         fields = ('username', 'email')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Добавляем Bootstrap класс и placeholder ко всем полям
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Имя пользователя'
+        })
+        self.fields['email'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Электронная почта'
+        })
+        self.fields['password1'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Пароль'
+        })
+        self.fields['password2'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Повторите пароль'
+        })
+
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -36,12 +64,26 @@ class UserProfileForm(UserCreationForm):
         return user
     
 class LoginForm(forms.Form):
-    username = forms.CharField(max_length=150)
-    password = forms.CharField(widget=forms.PasswordInput)
+    username = forms.CharField(widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Имя пользователя'
+    }))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Пароль'
+    }))
+
 
 
 class UserProfileUpdateForm(forms.ModelForm):
-    bio = forms.CharField(widget=forms.Textarea, required=False)
+    bio = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': 'Расскажите о себе…',
+            'rows': 3
+        }),
+        required=False
+    )
     avatar = forms.ImageField(required=False)
 
     class Meta:
@@ -54,40 +96,26 @@ class UserProfileUpdateForm(forms.ModelForm):
             profile.save()
         return profile
 
-# class NewChatForm(forms.ModelForm):
-#     name = forms.CharField(max_length=255, initial='New Chat')
-
-#     availability = forms.ChoiceField(choices=[
-#         ('public', 'Public'),
-#         ('private', 'Private'),
-#     ])
-#     participants = forms.ModelMultipleChoiceField(
-#         queryset=UserProfile.objects.all(),
-#         widget=forms.CheckboxSelectMultiple
-#     )
-
-#     class Meta:
-#         model = Chat
-#         fields = ('name', 'availability', 'participants')
-
-#     def save(self, commit=True):
-#         chat = Chat(
-#             availability=self.cleaned_data['availability'],
-#             name = self.cleaned_data['name']
-#         )
-#         if commit:
-#             chat.save()
-#             chat.participants.set(self.cleaned_data['participants'])
-#         return chat
-
 class NewChatForm(forms.ModelForm):
     participants = forms.ModelMultipleChoiceField(
         queryset=UserProfile.objects.all(),
-        widget=forms.CheckboxSelectMultiple)
-    
+        widget=forms.CheckboxSelectMultiple
+    )
+
     class Meta:
         model = Chat
         fields = ('name', 'availability', 'participants')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Название чата'
+        })
+        self.fields['availability'].widget.attrs.update({
+            'class': 'form-control'
+        })
+
 
     def save(self, commit=True):
         chat = super().save(commit=False)
@@ -97,3 +125,37 @@ class NewChatForm(forms.ModelForm):
             self.save_m2m()
 
         return chat
+    
+class NewPostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ('title', 'content', 'image', 'video', 'link')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['title'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Заголовок поста'
+        })
+        self.fields['content'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Содержание поста',
+            'rows': 5
+        })
+
+class UpdatePostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ('title', 'content', 'image', 'video', 'link')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['title'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Заголовок поста'
+        })
+        self.fields['content'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Содержание поста',
+            'rows': 5
+        })

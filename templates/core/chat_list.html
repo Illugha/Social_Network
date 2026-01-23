@@ -1,9 +1,13 @@
 {% for chat in chats %}
-    <div class="card mb-2">
-        <div class="card-body">
-            <a href="{% url 'core:chat_detail' chat.id %}" class="card-title">{{ chat.name }}</a>
+    <div class="card mb-2 shadow-sm">
+        <div class="card-body p-2">
+            <a href="{% url 'core:chat_detail' chat.id %}" class="card-title h6 text-decoration-none">
+                {{ chat.name }}
+            </a>
         </div>
     </div>
 {% empty %}
-    <p>No chats available.</p>
+    <div class="alert alert-info mt-2">
+        No chats available.
+    </div>
 {% endfor %}

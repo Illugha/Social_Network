@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Post{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h2>Ви впевнені, що хочете видалити цей пост?</h2>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Так, видалити</button>
+            <a href="{% url 'core:home_page' %}" class="btn btn-secondary">Скасувати</a>
+        </form>
+    </div>
+{% endblock %}
