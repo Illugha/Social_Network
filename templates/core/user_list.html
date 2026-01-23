@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Users{% endblock %}
+{% block content %}
+<h1>User List</h1>
+
+<form method="get" class="mb-4">
+        <input
+            type="text"
+            name="q"
+            value="{{ request.GET.q }}"
+            placeholder="Search by username..."
+            class="form-control">
+        <button type="submit" class="btn btn-primary mt-2">Search</button>
+    </form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Date Joined</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td><a href="{% url 'core:profile_detail' user.id %}">{{ user.username }}</a></td>
+            <td>{{ user.date_joined }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No users found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

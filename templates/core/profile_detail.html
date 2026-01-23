@@ -21,12 +21,12 @@
                 <li class="list-group-item"><strong>Role:</strong> {{ profile.get_role_display }}</li>
                 <li class="list-group-item"><strong>Date Joined:</strong> {{ profile.date_joined|date:"d M Y" }}</li>
             </ul>
-
-            <div class="text-center">
-                <a href="{% url 'core:profile_update' %}" class="btn btn-primary">Edit Profile</a>
-                <a href="{% url 'core:new_post' %}" class="btn btn-link">Add Post</a>
-            </div>
-
+            {% if profile.user == user %}
+                <div class="text-center">
+                    <a href="{% url 'core:profile_update' %}" class="btn btn-primary">Edit Profile</a>
+                    <a href="{% url 'core:new_post' %}" class="btn btn-link">Add Post</a>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

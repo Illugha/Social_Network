@@ -1,6 +1,8 @@
 from urllib import request
 from django.shortcuts import render
-from django.views.generic import View, CreateView, UpdateView, DeleteView, FormView
+from django.views.generic import View, CreateView, UpdateView, DeleteView, FormView, ListView, DetailView
+from django.contrib.auth.models import User
+from django.contrib.auth.views import LogoutView
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
 from django.urls import reverse_lazy
@@ -18,11 +20,19 @@ class UserCreationView(FormView):
         messages.success(self.request, "Профіль успішно створено! Ласкаво просимо!")
         return redirect('core:profile_detail')
 
-class UserProfileDetailView(View):
-    def get(self, request, *args, **kwargs):
-        profile = UserProfile.objects.get(user=request.user)
-        chats = profile.chats.all()
-        return render(request, 'core/profile_detail.html', {'profile': profile, 'chats': chats})
+class UserProfileDetailView(DetailView):
+    model = UserProfile
+    template_name = 'core/profile_detail.html'
+    context_object_name = 'profile'
+
+    def get_object(self, queryset=None):
+        user_id = self.kwargs.get('user_id')
+        return get_object_or_404(UserProfile, user__id=user_id)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['chats'] = self.object.chats.all() if hasattr(self.object, 'chats') else []
+        return context
 
 class LoginFormView(FormView):
     form_class = LoginForm
@@ -36,10 +46,13 @@ class LoginFormView(FormView):
         if user is not None:
             login(self.request, user)
             messages.success(self.request, "Ви успішно увійшли!")
-            return redirect('core:profile_detail')
+            return redirect('core:profile_detail', user_id=user.id)
         else:
             form.add_error(None, "Невірний логін або пароль")
             return self.form_invalid(form)
+
+class UserLogoutView(LogoutView):
+    next_page = reverse_lazy('core:home_page')
 
 class UserProfileUpdateView(UpdateView):
     model = UserProfile
@@ -73,6 +86,31 @@ class NewPostView(View):
             return redirect(self.success_url)
 
         return render(request, self.template_name, {'form': form})
+
+class logoutView(LogoutView):
+    next_page = reverse_lazy('core:login')
+
+class UserListView(ListView):
+    model = User
+    template_name = 'core/user_list.html'
+    context_object_name = 'users'
+
+    def get_queryset(self):
+        queryset = User.objects.all()
+
+        q = self.request.GET.get('q')
+        if q:
+            queryset = queryset.filter(
+                username__icontains=q
+            )
+
+        return queryset.order_by('username')
+
+class UserProfileView(DetailView):
+    model = UserProfile
+    template_name = 'core/user_profile.html'
+    context_object_name = 'profile'
+    pk_url_kwarg = 'profile_id'
 
 class UpdatePostView(UpdateView):
     model = Post
