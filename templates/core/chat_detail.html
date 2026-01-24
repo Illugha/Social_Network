@@ -6,7 +6,6 @@
 
         <h2 class="mb-4">Chat: {{ chat.name }}</h2>
 
-        <!-- Сообщения -->
         <div class="mb-4">
             {% for message in chat.messages.all %}
                 <div class="card mb-2 shadow-sm">
@@ -22,17 +21,27 @@
             {% endfor %}
         </div>
 
-        <!-- Форма отправки -->
         <form method="post" class="mb-4">
             {% csrf_token %}
             <div class="input-group">
-                <textarea class="form-control" name="content" rows="2" placeholder="Type a message..." required></textarea>
+                <textarea id="autoResize" class="form-control" name="content" rows="1" placeholder="Type a message..." required
+                style="resize: none; overflow: hidden; max-height: 10ch;"></textarea>
                 <button class="btn btn-primary" type="submit">
                     <img src="/static/imgs/send.png" width="20" height="20" alt="Send">
                 </button>
             </div>
         </form>
-
     </div>
 </div>
+
+<script>
+const textarea = document.getElementById('autoResize');
+
+textarea.addEventListener('input', function() {
+    this.style.height = 'auto';
+    const maxHeight = parseInt(window.getComputedStyle(this).maxHeight);
+    this.style.height = Math.min(this.scrollHeight, maxHeight) + 'px';
+});
+</script>
+
 {% endblock %}

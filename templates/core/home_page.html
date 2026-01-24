@@ -1,5 +1,56 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>1488</h1>
+{% for post in posts %}
+    <div class="post">
+        <div class="h2 pb-1 text-success border-bottom border-top border-end border-success border-3 rounded-2">{{ post.author }}</div>
+        <div class="h3 text-primary">{{ post.title }}</div>
+        <div class="post-content">{{ post.content }}</div>
+        <div class="post-media">
+            {% if post.image %}
+                <img src="{{ post.image.url }}" alt="Post Image" class="post-image">
+            {% endif %}
+
+            {% if post.video %}
+                <video controls class="post-video">
+                    <source src="{{ post.video.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% endif %}
+        </div>
+        <div class="mt-2">
+            {% if post.link %}
+                <a>Link:</a>
+                <a href="{{ post.link }}" target="_blank" rel="noopener noreferrer">
+                    {{ post.link }}
+                </a>
+            {% endif %}
+        </div>
+        <p><em>Posted on {{ post.created_at }}</em></p>
+    </div>
+{% endfor %}
+
+<style>
+.post-media {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.post-image {
+    width: 250px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.post-video {
+    width: 320px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+</style>
+
 {% endblock %}

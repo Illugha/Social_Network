@@ -22,7 +22,7 @@
         {% if user.is_authenticated %}
 
             <a class="btn btn-success me-3" href="{% url 'core:new_chat' %}">
-                ➕ Новый чат
+                ➕ New Chat
             </a>
             <a class="navbar-brand" href="{% url 'core:profile_detail' user.id %}">
                 {% if user.is_authenticated %}
@@ -85,7 +85,7 @@
 <footer class="bg-dark text-light text-center py-3 mt-auto">
     <div class="container">
         <p class="mb-1 fw-bold">My Social Network</p>
-        <small class="text-secondary">© 2026 Все права защищены</small>
+        <small class="text-secondary">© 2026 All rights reserved</small>
     </div>
 </footer>
 

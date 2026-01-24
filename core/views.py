@@ -1,6 +1,7 @@
 from urllib import request
 from django.shortcuts import render
-from django.views.generic import View, CreateView, UpdateView, DeleteView, FormView, ListView, DetailView
+from django.views.generic import View, UpdateView, DeleteView, FormView, ListView, DetailView
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth import login, authenticate
@@ -73,6 +74,11 @@ class NewPostView(View):
         form = self.form_class()
         return render(request, self.template_name, {'form': form})
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['chats'] = self.object.chats.all() if hasattr(self.object, 'chats') else []
+        return context
+
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST, request.FILES)
 
@@ -95,22 +101,27 @@ class UserListView(ListView):
     template_name = 'core/user_list.html'
     context_object_name = 'users'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['chats'] = self.request.user.user_profile.chats.all()
+        else:
+            context['chats'] = []
+        return context
+
     def get_queryset(self):
         queryset = User.objects.all()
 
-        q = self.request.GET.get('q')
-        if q:
-            queryset = queryset.filter(
-                username__icontains=q
-            )
+        q_username = self.request.GET.get('q_username')
+        profile_id = self.request.GET.get('profile_id')
+
+        if q_username:
+            queryset = queryset.filter(username__icontains=q_username)
+
+        if profile_id:
+            queryset = queryset.filter(user_profile__id=profile_id)
 
         return queryset.order_by('username')
-
-class UserProfileView(DetailView):
-    model = UserProfile
-    template_name = 'core/user_profile.html'
-    context_object_name = 'profile'
-    pk_url_kwarg = 'profile_id'
 
 class UpdatePostView(UpdateView):
     model = Post
@@ -127,6 +138,11 @@ class UpdatePostView(UpdateView):
 
     def get_success_url(self):
         return reverse('core:user_posts', kwargs={'profile_id': self.object.author.id})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['chats'] = self.request.user.user_profile.chats.all() if self.request.user.is_authenticated else []
+        return context
 
 from django.urls import reverse
 
@@ -139,11 +155,7 @@ class DeletePostView(DeleteView):
         return Post.objects.get(id=post_id, author=self.request.user.user_profile)
 
     def get_success_url(self):
-        # после удаления редирект на страницу всех постов автора
         return reverse('core:user_posts', kwargs={'profile_id': self.object.author.id})
-
-from django.views.generic import ListView
-from django.shortcuts import get_object_or_404
 
 class UserPostsView(ListView):
     model = Post
@@ -162,6 +174,8 @@ class UserPostsView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['profile'] = self.profile
+        user_profile = getattr(self.request.user, 'user_profile', None)
+        context['chats'] = user_profile.chats.all() if user_profile else []
         return context
 
 class NewChatView(View):
@@ -192,7 +206,24 @@ class ChatDetailView(View):
     def get(self, request, chat_id, *args, **kwargs):
         chat = Chat.objects.get(id=chat_id)
         return render(request, 'core/chat_detail.html', {'chat': chat})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['chats'] = self.object.chats.all() if hasattr(self.object, 'chats') else []
+        return context
 
-class HomePageView(View):
-    def get(self, request, *args, **kwargs):
-        return render(request, 'core/home_page.html')
+class HomePageView(ListView):
+    model = Post
+    template_name = 'core/home_page.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        return Post.objects.all().order_by('-created_at')[:10]
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['chats'] = self.request.user.user_profile.chats.all()
+        else:
+            context['chats'] = []
+        return context

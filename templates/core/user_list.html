@@ -4,16 +4,27 @@
 {% block title %}Users{% endblock %}
 {% block content %}
 <h1>User List</h1>
-
 <form method="get" class="mb-4">
-        <input
-            type="text"
-            name="q"
-            value="{{ request.GET.q }}"
-            placeholder="Search by username..."
-            class="form-control">
-        <button type="submit" class="btn btn-primary mt-2">Search</button>
-    </form>
+    <div class="row g-2">
+        <div class="col-md-6">
+            <input
+                type="text"
+                name="q_username"
+                value="{{ request.GET.q_username }}"
+                placeholder="Search by username..."
+                class="form-control">
+        </div>
+        <div class="col-md-6">
+            <input
+                type="text"
+                name="profile_id"
+                value="{{ request.GET.profile_id }}"
+                placeholder="Search by profile id"
+                class="form-control">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Search</button>
+</form>
 
 <table>
     <thead>

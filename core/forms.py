@@ -21,7 +21,6 @@ class UserProfileForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Добавляем Bootstrap класс и placeholder ко всем полям
         self.fields['username'].widget.attrs.update({
             'class': 'form-control',
             'placeholder': 'Имя пользователя'
@@ -45,13 +44,12 @@ class UserProfileForm(UserCreationForm):
         user.email = self.cleaned_data['email']
         if commit:
             user.save()
-            
-            # Створюємо/оновлюємо профіль завжди, без умов
+
             profile, created = UserProfile.objects.get_or_create(
                 user=user,
                 defaults={'bio': self.cleaned_data['bio'], 'role': 'member'}
             )
-            if not created:  # якщо вже був - просто оновлюємо поля
+            if not created:
                 profile.bio = self.cleaned_data['bio'] or profile.bio
                 if self.cleaned_data['avatar']:
                     profile.avatar = self.cleaned_data['avatar']
