@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm p-4">
+            <p>Profile ID: {{ profile.id }}</p>
+            <a href="{% url 'core:user_posts' profile.id %}"><h2 class="text-center mb-4">{{ profile.user.username }}</h2></a>
+
+            {% if profile.avatar %}
+                <div class="text-center mb-3">
+                    <img src="{{ profile.avatar.url }}" 
+                         alt="Avatar of {{ profile.user.username }}" 
+                         class="rounded-circle img-thumbnail" 
+                         style="width: 120px; height: 120px; object-fit: cover;">
+                </div>
+            {% endif %}
+
+            <ul class="list-group list-group-flush mb-3">
+                <li class="list-group-item"><strong>Bio:</strong> {{ profile.bio|default:"-" }}</li>
+                <li class="list-group-item"><strong>Role:</strong> {{ profile.get_role_display }}</li>
+                <li class="list-group-item"><strong>Date Joined:</strong> {{ profile.date_joined|date:"d M Y" }}</li>
+            </ul>
+            {% if profile.user == user %}
+                <div class="text-center">
+                    <a href="{% url 'core:profile_update' %}" class="btn btn-primary">Edit Profile</a>
+                    <a href="{% url 'core:new_post' %}" class="btn btn-link">Add Post</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

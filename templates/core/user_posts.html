@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}User Posts{% endblock %}
+
+{% block content %}
+<div class="h2 text-primary-emphasis">Posts by {{ profile.user.username }}</div>
+<div class="posts-list">
+    {% for post in posts %}
+        <div class="post-item">
+            <div class="h3 text-primary">{{ post.title }}</div>
+            <div class="h5">{{ post.content }}</div>
+            <div class="post-media">
+                {% if post.image %}
+                    <img src="{{ post.image.url }}"
+                        alt="Post Image"
+                        class="post-image">
+                {% endif %}
+
+                {% if post.video %}
+                    <video controls class="post-video">
+                        <source src="{{ post.video.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endif %}
+            </div>
+            <div class="mt-2">
+                {% if post.link %}
+                    <a>Link:</a>
+                    <a href="{{ post.link }}" target="_blank" rel="noopener noreferrer">
+                        {{ post.link }}
+                    </a>
+                {% endif %}
+            </div>
+
+
+            <p><small>Posted on {{ post.created_at }}</small></p>
+            <form method="post" action="{% url 'core:like_post' post.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    {% if user.user_profile in post.likes.all %}
+                        ❤️ {{ post.likes.count }}
+                    {% else %}
+                        🤍 {{ post.likes.count }}
+                    {% endif %}
+                </button>
+
+            {% if user.is_staff or user.user_profile == post.author %}
+                <a href="{% url 'core:update_post' post.id %}"
+                class="btn btn-sm btn-primary">Edit</a>
+                <a href="{% url 'core:delete_post' post.id %}"
+                class="btn btn-sm btn-danger">Delete</a>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>No posts available.</p>
+    {% endfor %}
+</div>
+
+<style>
+.post-media {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.post-image {
+    width: 250px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.post-video {
+    width: 320px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+</style>
+
+{% endblock %}
