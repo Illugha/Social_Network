@@ -42,12 +42,13 @@ class Chat(models.Model):
     )
 
     name = models.CharField(max_length=255, default='New Chat')
+    creator = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='created_chats', default=None)
     participants = models.ManyToManyField(UserProfile, related_name='chats')
     availability = models.CharField(max_length=50, choices=AVAILABILITY_CHOICES, default='private')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Chat {self.id} with {self.participants.count()} participants"
+        return f"Chat {self.id} with {self.participants.count()} participants, {self.creator} and {self.availability} access"
     
 class Message(models.Model):
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')

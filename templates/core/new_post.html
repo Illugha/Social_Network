@@ -8,6 +8,7 @@
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Submit</button>
+    <button type="submit" class="btn btn-primary">Submit</button>
 </form>
+<a href="{% url 'core:profile_detail' user.id %}" class="btn btn-danger mt-3">Back</a>
 {% endblock %}

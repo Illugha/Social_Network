@@ -27,6 +27,16 @@
             {% endif %}
         </div>
         <p><em>Posted on {{ post.created_at }}</em></p>
+        <form method="post" action="{% url 'core:like_post' post.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                {% if user.user_profile in post.likes.all %}
+                    ❤️ {{ post.likes.count }}
+                {% else %}
+                    🤍 {{ post.likes.count }}
+                {% endif %}
+            </button>
+        </form>
     </div>
 {% endfor %}
 

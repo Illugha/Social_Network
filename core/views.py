@@ -1,6 +1,7 @@
 from urllib import request
+from django.http import Http404
 from django.shortcuts import render
-from django.views.generic import View, UpdateView, DeleteView, FormView, ListView, DetailView
+from django.views.generic import View, UpdateView, DeleteView, FormView, ListView, DetailView, CreateView
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LogoutView
@@ -8,7 +9,8 @@ from django.contrib.auth import login, authenticate
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
-from .models import UserProfile, Chat, Post
+from django.urls import reverse
+from .models import UserProfile, Chat, Post, Message
 from .forms import *
 
 class UserCreationView(FormView):
@@ -59,10 +61,12 @@ class UserProfileUpdateView(UpdateView):
     model = UserProfile
     form_class = UserProfileUpdateForm
     template_name = 'core/profile_update.html'
-    success_url = reverse_lazy('core:profile_detail')
 
     def get_object(self, queryset=None):
         return UserProfile.objects.get(user=self.request.user)
+    
+    def get_success_url(self):
+        return reverse('core:profile_detail', kwargs={'user_id': self.request.user.id})
 
 class NewPostView(View):
     model = Post
@@ -144,8 +148,6 @@ class UpdatePostView(UpdateView):
         context['chats'] = self.request.user.user_profile.chats.all() if self.request.user.is_authenticated else []
         return context
 
-from django.urls import reverse
-
 class DeletePostView(DeleteView):
     model = Post
     template_name = 'core/delete_post.html'
@@ -182,7 +184,6 @@ class NewChatView(View):
     model = Chat
     form_class = NewChatForm
     template_name = 'core/new_chat.html'
-    success_url = reverse_lazy('core:profile_detail')
 
     def get(self, request, *args, **kwargs):
         form = self.form_class()
@@ -192,25 +193,46 @@ class NewChatView(View):
         form = self.form_class(request.POST)
         if form.is_valid():
             chat = form.save(commit=False)
+            chat.creator = request.user.user_profile
             chat.save()
 
-            chat.participants.add(request.user.user_profile)
-            form.save_m2m()
+            if chat.availability == 'private':
+                participants = form.cleaned_data.get('participants')
+                if participants:
+                    chat.participants.set(participants)
+                chat.participants.add(request.user.user_profile)
+            else:
+                chat.participants.add(request.user.user_profile)
 
-            messages.success(request, "Новий чат успішно створено!")
-            return redirect(self.success_url)
-
-        return render(request, self.template_name, {'form': form})
+            messages.success(request, "Chat has been created!")
+            return redirect('core:chat_detail', chat_id=chat.id)
+        else:
+            print(form.errors)
+            return render(request, self.template_name, {'form': form})
 
 class ChatDetailView(View):
     def get(self, request, chat_id, *args, **kwargs):
-        chat = Chat.objects.get(id=chat_id)
-        return render(request, 'core/chat_detail.html', {'chat': chat})
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['chats'] = self.object.chats.all() if hasattr(self.object, 'chats') else []
-        return context
+        if not request.user.is_authenticated:
+            raise Http404()
+
+        chat = get_object_or_404(Chat, id=chat_id)
+
+        user_profile = request.user.user_profile
+
+        if chat.availability == 'private' and user_profile not in chat.participants.all():
+            raise Http404()
+
+        return render(request, 'core/chat_detail.html', {
+            'chat': chat,
+            'messages': chat.messages.select_related('sender__user'),
+        })
+
+class ChatDeleteView(DeleteView):
+    model = Chat
+    template_name = 'core/delete_chat.html'
+
+    def get_success_url(self):
+        return reverse('core:profile_detail', kwargs={'user_id': self.request.user.id})
 
 class HomePageView(ListView):
     model = Post
@@ -227,3 +249,63 @@ class HomePageView(ListView):
         else:
             context['chats'] = []
         return context
+
+class MessageCreateView(CreateView):
+    model = Message
+    form_class = MessageForm
+
+    def form_valid(self, form):
+        chat_id = self.kwargs.get('chat_id')
+        chat = get_object_or_404(Chat, id=chat_id)
+        message = form.save(commit=False)
+        message.chat = chat
+        message.sender = self.request.user.user_profile
+        message.save()
+        return redirect('core:chat_detail', chat_id=chat.id)
+
+class MessageDeleteView(DeleteView):
+    model = Message
+    template_name = 'core/delete_message.html'
+
+    def get_success_url(self):
+        return reverse('core:chat_detail', kwargs={'chat_id': self.object.chat.id})
+
+class MessageUpdateView(UpdateView):
+    model = Message
+    form_class = MessageForm
+    template_name = 'core/update_message.html'
+
+    def get_success_url(self):
+        return reverse('core:chat_detail', kwargs={'chat_id': self.object.chat.id})
+
+
+class PublicChatsListView(ListView):
+    model = Chat
+    template_name = 'core/public_chats_list.html'
+    context_object_name = 'public_chats'
+
+    def get_queryset(self):
+        return Chat.objects.filter(availability='public').order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['chats'] = self.request.user.user_profile.chats.all()
+        else:
+            context['chats'] = []
+        return context
+
+class LikePostView(View):
+    def post(self, request, post_id, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('core:login')
+
+        post = get_object_or_404(Post, id=post_id)
+        user_profile = request.user.user_profile
+
+        if user_profile in post.likes.all():
+            post.likes.remove(user_profile)
+        else:
+            post.likes.add(user_profile)
+
+        return redirect('core:user_posts', profile_id=post.author.id)

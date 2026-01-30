@@ -3,17 +3,27 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">
-
-        <h2 class="mb-4">Chat: {{ chat.name }}</h2>
+        <div class="mt-4">
+            <h2 class="mb-4">Chat: {{ chat.name }}</h2>
+            {% if chat.creator == user.user_profile %}
+                <a href="{% url 'core:delete_chat' chat.id %}" class="btn btn-danger btn-sm mb-2">Delete Chat</a>
+            {% endif %}
+        </div>
 
         <div class="mb-4">
             {% for message in chat.messages.all %}
                 <div class="card mb-2 shadow-sm">
                     <div class="card-body p-2">
-                        <strong>{{ message.sender.username }}:</strong>
+                        <strong>{{ message.sender.user.username }}:</strong>
                         <span>{{ message.content }}</span>
                         <br>
                         <small class="text-muted">{{ message.timestamp|date:"d M Y H:i" }}</small>
+                        {% if chat.creator == user.user_profile or user.user_profile == message.sender %}
+                            <a href="{% url 'core:delete_message' message.id %}" class="btn btn-sm btn-danger float-end">Delete</a>
+                        {% endif %}
+                        {% if user.user_profile == message.sender %}
+                            <a href="{% url 'core:update_message' message.id %}" class="btn btn-sm btn-primary float-end me-2">Edit</a>
+                        {% endif %}
                     </div>
                 </div>
             {% empty %}
@@ -21,7 +31,7 @@
             {% endfor %}
         </div>
 
-        <form method="post" class="mb-4">
+        <form method="post" action="{% url 'core:new_message' chat.id %}" class="mb-4">
             {% csrf_token %}
             <div class="input-group">
                 <textarea id="autoResize" class="form-control" name="content" rows="1" placeholder="Type a message..." required
