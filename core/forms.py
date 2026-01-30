@@ -124,7 +124,22 @@ class NewChatForm(forms.ModelForm):
             self.save_m2m()
 
         return chat
-    
+
+class ChatRenameForm(forms.ModelForm):
+    class Meta:
+        model = Chat
+        fields = ('name', 'participants')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Новое название чата'
+        })
+        self.fields['participants'].widget.attrs.update({
+            'class': 'form-control'
+        })
+
 class NewPostForm(forms.ModelForm):
     class Meta:
         model = Post

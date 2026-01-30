@@ -22,4 +22,5 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='core:login'), name='logout'),
     path('public_chat_list/', PublicChatsListView.as_view(), name='public_chat_list'),
     path('like_post/<int:post_id>/', LikePostView.as_view(), name='like_post'),
+    path('chat/<int:chat_id>/rename/', ChatRenameView.as_view(), name='chat_rename'),
     ]

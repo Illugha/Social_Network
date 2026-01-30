@@ -6,6 +6,7 @@
         <div class="mt-4">
             <h2 class="mb-4">Chat: {{ chat.name }}</h2>
             {% if chat.creator == user.user_profile %}
+                <a href="{% url 'core:chat_rename' chat.id %}" class="btn btn-outline-secondary btn-sm mb-2">Edit</a>
                 <a href="{% url 'core:delete_chat' chat.id %}" class="btn btn-danger btn-sm mb-2">Delete Chat</a>
             {% endif %}
         </div>
