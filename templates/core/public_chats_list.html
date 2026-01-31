@@ -3,6 +3,18 @@
 <div class="container">
     <h2 class="mb-4">Public Community Chats</h2>
     <div class="list-group">
+        <form method="get" class="mb-4">
+            <div class="input-group">
+                <input
+                    type="text"
+                    name="q_chat_name"
+                    value="{{ request.GET.q_chat_name }}"
+                    placeholder="Search by chat name..."
+                    class="form-control">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+
         {% for chat in public_chats %}
             <a href="{% url 'core:chat_detail' chat.id %}" class="list-group-item list-group-item-action">
                 <h3 class="mb-1">{{ chat.name }}</h3>

@@ -273,7 +273,22 @@ class MessageCreateView(CreateView):
         message.chat = chat
         message.sender = self.request.user.user_profile
         message.save()
+        if chat.availability == 'public' and self.request.user.user_profile not in chat.participants.all():
+            chat.participants.add(self.request.user.user_profile)
         return redirect('core:chat_detail', chat_id=chat.id)
+
+class LeaveChatView(View):
+    def post(self, request, chat_id, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('core:login')
+
+        chat = get_object_or_404(Chat, id=chat_id)
+        user_profile = request.user.user_profile
+
+        if user_profile in chat.participants.all():
+            chat.participants.remove(user_profile)
+
+        return redirect('core:profile_detail', user_id=request.user.id)
 
 class MessageDeleteView(DeleteView):
     model = Message
@@ -297,7 +312,14 @@ class PublicChatsListView(ListView):
     context_object_name = 'public_chats'
 
     def get_queryset(self):
-        return Chat.objects.filter(availability='public').order_by('-created_at')
+        queryset = Chat.objects.filter(availability='public')
+
+        chat_name = self.request.GET.get('q_chat_name')
+
+        if chat_name:
+            queryset = queryset.filter(name__icontains=chat_name)
+
+        return queryset.order_by('-created_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

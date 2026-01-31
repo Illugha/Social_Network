@@ -23,4 +23,5 @@ urlpatterns = [
     path('public_chat_list/', PublicChatsListView.as_view(), name='public_chat_list'),
     path('like_post/<int:post_id>/', LikePostView.as_view(), name='like_post'),
     path('chat/<int:chat_id>/rename/', ChatRenameView.as_view(), name='chat_rename'),
+    path('chat/<int:chat_id>/leave/', LeaveChatView.as_view(), name='leave_chat'),
     ]
