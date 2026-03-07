@@ -21,7 +21,7 @@ class UserCreationView(FormView):
         user = form.save()
         login(self.request, user)
         messages.success(self.request, "Профіль успішно створено! Ласкаво просимо!")
-        return redirect('core:profile_detail')
+        return redirect('core:profile_detail', user_id=user.id)
 
 class UserProfileDetailView(DetailView):
     model = UserProfile
@@ -69,19 +69,16 @@ class UserProfileUpdateView(UpdateView):
         return reverse('core:profile_detail', kwargs={'user_id': self.request.user.id})
 
 class NewPostView(View):
-    model = Post
     form_class = NewPostForm
     template_name = 'core/new_post.html'
-    success_url = reverse_lazy('core:user_posts')
+
+    def get_success_url(self):
+        profile_id = self.request.user.user_profile.id
+        return reverse('core:user_posts', kwargs={'profile_id': profile_id})
 
     def get(self, request, *args, **kwargs):
         form = self.form_class()
         return render(request, self.template_name, {'form': form})
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['chats'] = self.object.chats.all() if hasattr(self.object, 'chats') else []
-        return context
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST, request.FILES)
@@ -93,7 +90,7 @@ class NewPostView(View):
             form.save_m2m()
 
             messages.success(request, "Новий пост успішно створено!")
-            return redirect(self.success_url)
+            return redirect(self.get_success_url())
 
         return render(request, self.template_name, {'form': form})
 

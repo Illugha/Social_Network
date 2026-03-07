@@ -6,6 +6,7 @@ from .models import UserProfile, Chat, Post, Message
 
 class UserProfileForm(UserCreationForm):
     bio = forms.CharField(
+        label="О себе",
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'placeholder': 'Расскажите о себе…',
@@ -13,7 +14,7 @@ class UserProfileForm(UserCreationForm):
         }),
         required=False
     )
-    avatar = forms.ImageField(required=False)
+    avatar = forms.ImageField(label="Аватар", required=False)
 
     class Meta:
         model = User
