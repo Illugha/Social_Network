@@ -230,8 +230,12 @@ class ChatRenameView(UpdateView):
 
     def get_object(self, queryset=None):
         chat_id = self.kwargs.get('chat_id')
-        participants = self.request.user.user_profile
-        return get_object_or_404(Chat, id=chat_id, participants=participants, creator=self.request.user.user_profile)
+        user_profile = self.request.user.user_profile
+        return get_object_or_404(
+            Chat,
+            id=chat_id,
+            creator=user_profile,
+        )
     
     def get_success_url(self):
         return reverse('core:chat_detail', kwargs={'chat_id': self.object.id})
